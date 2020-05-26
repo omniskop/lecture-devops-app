@@ -78,6 +78,7 @@ etc.), which would then invoke logic also shown under some make target.
 #### `make start`
 
 * start a MongoDB process with an explicit inline-configuration
-* start the application process with variables being set only visible to that invocation (as an alternative to the
+* start the application process with variables being set in a way so that they are only visible to that invocation
+  (as an alternative to the
   environment configuration file `app/server/dev.env`)
 * block terminal to keep it as the output medium. To stop again, send a termination signal via `Ctrl+C`

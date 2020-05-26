@@ -7,6 +7,7 @@ MKFILE_DIR = $(abspath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 LOCAL_DIR = $(MKFILE_DIR)/.local
 
 BIN_DIR = $(LOCAL_DIR)/bin
+LIB_DIR = $(LOCAL_DIR)/lib
 TEMP_DIR = $(LOCAL_DIR)/tmp
 DATA_DIR = $(LOCAL_DIR)/data
 LOG_DIR = $(LOCAL_DIR)/logs
@@ -28,6 +29,7 @@ PLATFORM := $(shell if echo $$OSTYPE | grep -q darwin; then echo darwin; else ec
 
 NODEJS_URL = https://nodejs.org/dist/v$(NODEJS_VERSION)/node-v$(NODEJS_VERSION)-$(PLATFORM)-x64.tar.gz
 NODEJS_ARTIFACT = $(TEMP_DIR)/node-v$(NODEJS_VERSION)-$(PLATFORM)-x64.tar.gz
+NODEJS_ARCHIVE = $(patsubst %.tar.gz,%,$(notdir $(NODEJS_ARTIFACT)))
 NODEJS_BIN = $(BIN_DIR)/node
 NPM_BIN = $(BIN_DIR)/npm
 NODEJS_SHA256 ?= $(shell cat $(STACK_DIR)/versions/nodejs.256.sums | grep v$(NODEJS_VERSION)-$(PLATFORM)-x64 | awk '{ print $$ 2 }')
@@ -42,6 +44,7 @@ else
 	fail 'Unknown platform. No condition met'
 endif
 MONGODB_ARTIFACT = $(TEMP_DIR)/mongodb-$(PLATFORM)-$(MONGODB_VERSION).tar.gz
+MONGODB_ARCHIVE = $(patsubst %.tar.gz,%,$(notdir $(MONGODB_ARTIFACT)))
 MONGODB_BIN = $(BIN_DIR)/mongod
 MONGODB_SHA256 ?= $(shell cat $(STACK_DIR)/versions/mongodb.256.sums | grep $(PLATFORM)-x86_64-$(MONGODB_VERSION) | awk '{ print $$ 2 }')
 
@@ -157,7 +160,7 @@ $(NODEJS_BIN): | $(NODEJS_ARTIFACT) $(BIN_DIR)/
 		--strip-components 2 \
 		--directory "$(BIN_DIR)" \
 		--file "$(NODEJS_ARTIFACT)" \
-		node-*/bin/node
+		$(NODEJS_ARCHIVE)/bin/node
 	chmod +x "$@"
 
 $(NODEJS_ARTIFACT): | $(TEMP_DIR)/
@@ -171,14 +174,16 @@ $(NODEJS_ARTIFACT): | $(TEMP_DIR)/
 npm: $(NPM_BIN)
 npm: export PATH := $(BIN_DIR):$(PATH)
 $(NPM_BIN): | $(NODEJS_BIN)
+	mkdir -p $(LIB_DIR)
 	tar \
 		--extract \
 		--verbose \
 		--strip-components 2 \
-		--directory "$(BIN_DIR)" \
+		--directory "$(LIB_DIR)" \
 		--file "$(NODEJS_ARTIFACT)" \
-		node-*/bin/npm
-	chmod +x "$@"
+		$(NODEJS_ARCHIVE)/lib/node_modules
+	chmod +x $(LIB_DIR)/node_modules/npm/bin/npm-cli.js
+	ln -s $(LIB_DIR)/node_modules/npm/bin/npm-cli.js $(NPM_BIN)
 	npm install -g npm@$(NPM_VERSION)
 
 
@@ -186,14 +191,16 @@ $(NPM_BIN): | $(NODEJS_BIN)
 mongod: $(MONGODB_BIN)
 $(MONGODB_BIN): | $(MONGODB_ARTIFACT) $(BIN_DIR)/
 	@ [ $$(openssl dgst -sha256 "$(MONGODB_ARTIFACT)" | awk '{ print $$ 2 }') == $(MONGODB_SHA256) ] || ( echo "Invalid SHA256." && rm $(MONGODB_ARTIFACT) && exit 1 )
+	mkdir -p $(TEMP_DIR)/$(MONGODB_ARCHIVE)
 	tar \
 		--extract \
 		--verbose \
 		--strip-components 2 \
-		--directory "$(BIN_DIR)" \
-		--file "$(MONGODB_ARTIFACT)" \
-		mongodb-*/bin/mongod
+		--directory "$(TEMP_DIR)/$(MONGODB_ARCHIVE)" \
+		--file "$(MONGODB_ARTIFACT)"
+	mv $(TEMP_DIR)/$(MONGODB_ARCHIVE)/mongod "$@"
 	chmod +x "$@"
+	rm -rf $(TEMP_DIR)/$(MONGODB_ARCHIVE)
 
 $(MONGODB_ARTIFACT): | $(TEMP_DIR)/
 	curl \
