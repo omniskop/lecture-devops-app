@@ -8,16 +8,18 @@ This repository contains the [application](./app/README.md) that should be used 
 
 ### Getting started 
 
-For more information regarding the app, please have a look into its [README](./app/README.md).
+For more information regarding the app, please take a look into its [README](./app/README.md).
 
-The `Makefile` is the main entry point for this repository. It's meant to be used for documentation purposes and local
-development/invocation only. The following commands are available:
+The `Makefile` is the main entry point for this repository. It's meant to locally play and mess around with the
+application to figure out how it works and to tear it apart if necessary. Additionally, it should document all  
+invocations relevant to help you adapt this application as *workload* for the exercise implementation. 
 
-*NOTE:*
+**_Please note, that this `Makefile` is solely meant to showcase how to interact with the application and the code base.
+It is not recommended to invoke `make` targets from the CI/CD, but rather use automation-specific interfaces 
+(e.g. `Jenkinsfile`, `.travis.yml`, etc.), which would then invoke commands shown under some make target or in on eof the
+`package.json` files._**
 
-The `Makefile` is solely meant to showcase how to interact with the application and the code base, it is not recommended
-to invoke make targets from the CI/CD, but rather use automation-specific interfaces (e.g. `Jenkinsfile`, `.travis.yml`,
-etc.), which would then invoke logic also shown under some make target. 
+The following commands are available:
 
 
 #### `make install-stack`

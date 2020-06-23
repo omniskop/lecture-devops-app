@@ -7,6 +7,7 @@ const dbClientInstance_ = require('./db/mongo.js');
 const todoRoutes = require('./routes/todo');
 const userRoutes = require('./routes/user');
 const errorRoutes = require('./routes/error');
+const envRoute = require('./routes/env.js');
 let cookieParser = require('cookie-parser');
 
 const app = express();
@@ -34,6 +35,10 @@ app.use(helmet.contentSecurityPolicy({
 app.use(todoRoutes);
 app.use(userRoutes);
 app.use('/', express.static(path.resolve(__dirname, `./public`)));
+// IMPORTANT: Educational purpose only! Possibly exposes sensitive data.
+app.use(envRoute);
+// NOTE: must be last one, because is uses a wildcard (!) that behaves aa
+// fallback and catches everything else
 app.use(errorRoutes);
 
 
