@@ -80,7 +80,7 @@ run-db: | $(LOG_DIR)/ $(DATA_DIR)/
 run-local: export PATH := $(BIN_DIR):$(PATH)
 run-local: build
 	cd $(MKFILE_DIR)/app/server \
-	&& npm start
+	&& npm run start:dev
 
 
 .PHONY: test
@@ -90,10 +90,11 @@ test:
 	cd $(MKFILE_DIR)/app/client \
 	&& npm run test
 	cd $(MKFILE_DIR)/app/server \
-	PORT=3002 \
-    MONGODB_URL=mongodb://localhost:27017/$(randomString) \
-    JWT_SECRET=$(randomString) \
-	&& npm run test
+	&& \
+		PORT=3002 \
+		MONGODB_URL=mongodb://localhost:27017/$(randomString) \
+		JWT_SECRET=$(randomString) \
+	 	npm run test
 
 
 .PHONY: test-client-local

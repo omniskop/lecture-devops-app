@@ -1,18 +1,18 @@
 {
-  "name": "add-todo-server",
+  "name": "todo-app-server",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "env-cmd -f ./dev.env nodemon src/index.js",
-    "test": "jest --ci",
+    "start": "node src/index.js",
+    "start:dev": "env-cmd -f ./dev.env nodemon src/index.js",
+    "test": "jest --ci --detectOpenHandles",
     "test:dev": "env-cmd -f ./dev.env jest"
   },
   "devDependencies": {
-    "@shelf/jest-mongodb": "^1.1.5",
     "env-cmd": "^10.1.0",
-    "jest": "^25.1.0",
-    "nodemon": "^2.0.2"
+    "jest": "^26.4.2",
+    "nodemon": "^2.0.4"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -21,7 +21,7 @@
     "express": "^4.17.1",
     "helmet": "^3.22.0",
     "jsonwebtoken": "^8.5.1",
-    "mongoose": "^5.9.7",
+    "mongoose": "^5.10.7",
     "validator": "^13.0.0"
   },
   "engines": {

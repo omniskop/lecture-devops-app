@@ -50,6 +50,10 @@ app.use(errorRoutes);
                 __ful();
             }).on( 'error', rej__);
         });
+
+        process.on( 'SIGINT', ()=>{
+            process.exit( 2 );
+        });
     }catch( err ){
         console.error( err );
         process.exit( 1 );
