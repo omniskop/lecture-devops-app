@@ -32,7 +32,7 @@ const mongooseInstance_ = mongoose.connect(
 
 mongooseInstance_
     .then(()=>{
-        console.log( `Connect established to database: ${ process.env.MONGODB_URL }` );
+        process.env.NODE_ENV !== 'test' && console.log( `Connect established to database: ${ process.env.MONGODB_URL }` );
     })
     .catch(( err )=>{
         console.error( `Cannot connect to database: ${ process.env.MONGODB_URL }` );
