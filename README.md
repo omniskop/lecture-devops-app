@@ -18,7 +18,7 @@ Additionally, it documents various invocations that may help you adapting this a
 **_Please note, that the `Makefile` is only meant to showcase steps that are usually needed to be taken in order to
 automate the deployment lifecycle of such an application and code base.
 It is NOT recommended to invoke `make` targets from the CI/CD, but rather to utilize platform-specific interfaces 
-(e.g. `Jenkinsfile`, `.travis.yml`, etc.), which may then invoke commands shown in the `make` target or in the `scripts`
+(e.g. `.gitlab-ci.yml`, `Jenkinsfile`, etc.), which may then invoke commands shown in the `make` target or in the `scripts`
  section of one of the `package.json` files._**
 
 
@@ -26,37 +26,14 @@ It is NOT recommended to invoke `make` targets from the CI/CD, but rather to uti
 
 The following software must be installed and available in your `${PATH}`:
 
-* `node` ([NodeJS](https://nodejs.org/en/download)) 
-* `npm` ([npm](https://www.npmjs.com/get-npm))
-* `mongod` ([MongoDB](https://docs.mongodb.com/manual/installation/))
+* `node` ([NodeJS](https://nodejs.org/en/download)): latest v14
+* `npm` ([npm](https://www.npmjs.com/get-npm)): latest v6
+* `mongod` ([MongoDB](https://docs.mongodb.com/manual/installation/)): latest v4.2
 
-*NOTE: [required versions](https://github.com/lucendio/lecture-devops-app/blob/master/hack/Makefile#L18-L20)*
-
-
-#### Option 1
+*NOTE: the application in this repository has not been tested with versions newer than that*
 
 Choose for yourself how you want to install these dependencies. Perhaps you can use the package manager
 available on your operating system, or maybe you prefer using container images. 
-
-
-#### Option 2
-
-Install all executables via `Makefile` into this project structure.
-
-a) from the root directory:
-```sh
-make deps
-```
-
-b) from the `./hack` folder:
-```sh
-$(cd ./hack && make install)
-```
-
-__Don't forget to add the new folder (`./.local/bin` ) to your `${PATH}` variable in your shell environment:__ 
-```sh
-export PATH=$(pwd)/.local/bin:${PATH}
-```
 
 
 ### Commands
@@ -71,13 +48,15 @@ The following commands are available from the root directory:
 
 #### `make build`
 
-* builds the client code
-* copies it over into the server
+1. copies server source into some empty location
+2. copies dependency manifest (`package*`) into the same location right next to the server source
+3. installs server dependencies
+4. builds client code (requires client dependencies to be installed already) and puts it next to the server source into   
 
 
 #### `make test`
 
-*NOTE: requires a MongoDB service to already run (see `MONGODB_URL` in target on where it's assumed to be running)*
+*NOTE: requires a MongoDB service already ro be running (see `MONGODB_URL` in target on where it's assumed to be running)*
 
 * runs client & server tests in [CI mode](https://jestjs.io/docs/en/cli.html#--ci) (exits regardless of the test outcome; closed tty)
 
@@ -101,8 +80,8 @@ The following commands are available from the root directory:
 *NOTE (1): only demonstrates a use case during local development and are not meant to run in any other context (e.g. automation)*
 *NOTE (2): it might be desired to first start a database service (e.g. `make dev-start-db`)*
 
-* builds client (see `make build`) 
-* starts server in development mode and with development configuration
+* builds client
+* starts server in development mode with development configuration
 
 
 #### `make run`
@@ -119,14 +98,4 @@ The following commands are available from the root directory:
 #### `make clean`
 
 * removes all `node_modules` dependencies that have been installed locally via `npm`
-
-
-#### `make deps`
-
-* installs the software prerequisites as prebuild binaries locally in `.local/bin`
-
-
-#### `make nuke`
-
-* removes all `npm` dependencies (see `make clean`)
-* throws away `.local` folder and thus all software prerequisites that were installed within it
+* removes other temporarily created folder in `.local` 

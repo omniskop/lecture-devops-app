@@ -4,27 +4,19 @@ SHELL = /usr/bin/env bash -eo pipefail
 
 
 MKFILE_DIR = $(abspath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
-LOCAL_DIR = $(abspath $(MKFILE_DIR)/.local)
+LOCAL_DIR := $(abspath $(MKFILE_DIR)/.local)
 
 
-DATA_DIR = $(LOCAL_DIR)/data
-LOG_DIR = $(LOCAL_DIR)/logs
+DATA_DIR := $(LOCAL_DIR)/data
+LOG_DIR  := $(LOCAL_DIR)/logs
+TEMP_DIR := $(LOCAL_DIR)/temp
 
 
 APP_NODE_MODULE_DIRS = $(foreach dir, client server, $(subst %,$(dir),$(MKFILE_DIR)/app/%/node_modules))
 
 
-# NOTE: make sure to use binaries installed via ./hack/Makefile if exist
-export PATH := $(LOCAL_DIR)/bin:$(PATH)
 
-
-
-
-default: all
-
-all: install build
-
-
+default: install build
 
 
 .PHONY: install
@@ -40,21 +32,29 @@ $(LOCAL_DIR)/%/:
 
 .PHONY: clean
 clean:
-	for nodeModulesDir in $(APP_NODE_MODULE_DIRS); do \
-		rm -rf "$${nodeModulesDir}"; \
-	done
+	rm -rf \
+		$(APP_NODE_MODULE_DIRS) \
+		$(TEMP_DIR) \
+		$(LOCAL_DIR)/dist
 
 
 
 .PHONY: build
-build: CLIENT_BUILD_PATH ?= $(MKFILE_DIR)/app/server/src/public
-build: SERVER_PUBLIC_URL ?= http://localhost:3000
+build: SERVER_PUBLIC_URL ?= http://127.0.0.1:3001
+build: APP_BUILD_PATH ?= $(TEMP_DIR)
 build:
-	rm -rf $(CLIENT_BUILD_PATH)
+	rm -rf $(APP_BUILD_PATH)
+
+	cp -r $(MKFILE_DIR)/app/server/src $(APP_BUILD_PATH)
+	cp $(MKFILE_DIR)/app/server/package* $(APP_BUILD_PATH)/
+	cd $(APP_BUILD_PATH) \
+	&& \
+		npm install --prod --no-audit --no-fund \
+		&& rm -rf ./package*
 	cd $(MKFILE_DIR)/app/client \
 	&& \
 		PUBLIC_URL=$(SERVER_PUBLIC_URL) \
-		BUILD_PATH=$(CLIENT_BUILD_PATH) \
+		BUILD_PATH=$(APP_BUILD_PATH)/public \
 		node ./scripts/build.js
 
 
@@ -81,27 +81,32 @@ dev-test-client:
 
 
 .PHONY: dev-start-db
-dev-start-db: | $(LOG_DIR)/ $(DATA_DIR)/
-	mkdir -p $(DATA_DIR)/db
-	mongod --config $(MKFILE_DIR)/hack/local.mongod.conf
+dev-start-db: $(LOG_DIR)/ $(DATA_DIR)/ $(DATA_DIR)/db/
+	mongod --config $(MKFILE_DIR)/app/server/dev.mongod.conf
 
 
 .PHONY: dev-start-app
-dev-start-app: build
+dev-start-app:
+	cd $(MKFILE_DIR)/app/client \
+	&& \
+		PUBLIC_URL=$(SERVER_PUBLIC_URL) \
+		BUILD_PATH=$(MKFILE_DIR)/app/server/src/public \
+		node ./scripts/build.js
 	cd $(MKFILE_DIR)/app/server \
 	&& npm run start:dev
 
 
 
 .PHONY: run
+run: BUILD_PATH = $(LOCAL_DIR)/dist
 run: PUBLIC_URL = http://localhost
-run: SERVER_PORT = 3001
+run: SERVER_PORT = 3000
 run: DB_HOST = localhost
 run: DB_PORT = 27017
-run: | $(DATA_DIR)/ $(LOG_DIR)/
-	mkdir -p $(DATA_DIR)/db
-
-	make build SERVER_PUBLIC_URL=$(PUBLIC_URL):$(SERVER_PORT)
+run: $(DATA_DIR)/ $(LOG_DIR)/ $(DATA_DIR)/db/
+	make build \
+		APP_BUILD_PATH=$(BUILD_PATH) \
+		SERVER_PUBLIC_URL=$(PUBLIC_URL):$(SERVER_PORT)
 
 	(exec mongod \
 		--port $(DB_PORT) \
@@ -113,31 +118,7 @@ run: | $(DATA_DIR)/ $(LOG_DIR)/
 	(PORT=$(SERVER_PORT) \
 	MONGODB_URL=mongodb://$(DB_HOST):$(DB_PORT)/todo-app \
 	JWT_SECRET=myjwtsecret \
-	exec node $(MKFILE_DIR)/app/server/src/index.js \
+	exec node $(BUILD_PATH)/index.js \
 	) & PIDS[2]=$$!; \
 	\
 	for PID in $${PIDS[*]}; do wait $${PID}; done;
-
-
-
-
-.PHONY: deps
-deps:
-	NODEJS_VERSION=12.21.0  \
-	NPM_VERSION=6.14.11     \
-	MONGODB_VERSION=4.2.12  \
-		make -C $(MKFILE_DIR)/hack \
-		install
-	@echo ''
-	@echo 'In order to use the installed dependencies, the $$PATH variable must be adjusted.'
-	@echo 'Run:'
-	@echo ''
-	@echo '  export PATH=$$(pwd)/.local/bin:$${PATH}'
-	@echo ''
-
-
-.PHONY: nuke
-nuke:
-	cd $(MKFILE_DIR)/hack \
-		&& make clean
-	make clean
