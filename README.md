@@ -1,9 +1,15 @@
-Lecture: DevOps - application
+Lecture: DevOps - Application
 =============================
 
 
-This repository contains the [application](./app/README.md) that should be used as *deployable workload* for the
-[exercise](https://github.com/lucendio/lecture-devops-material/blob/master/assignments/exercise.md) implementation.  
+This repository contains the [application](./app/README.md) that is supposed be used as *deployable workload* in the
+[project assignment](https://github.com/lucendio/lecture-devops-material/blob/master/assignments/project-work.md)
+implementation.
+Normally, the only changes that are required to be made here in order 
+
+In order to adapt the application and integrate it into your automation and deployment processes, it's usually not
+required to change any existing code. Instead, you probably just want to add some *pipeline* code or even a container
+file (e.g. `Dockerfile`).
 
 
 ### Getting started 
