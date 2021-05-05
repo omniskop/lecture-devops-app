@@ -32,7 +32,9 @@ $(LOCAL_DIR)/%/:
 
 .PHONY: clean
 clean:
-	rm -rf \
+	echo "DELETING: $(APP_NODE_MODULE_DIRS) $(TEMP_DIR) $(LOCAL_DIR)/dist" | tr ' ' '\n'
+	read -p "OK? [N,y] " input; [[ "$${input}" == "y" ]] \
+	&& rm -rf \
 		$(APP_NODE_MODULE_DIRS) \
 		$(TEMP_DIR) \
 		$(LOCAL_DIR)/dist
@@ -43,7 +45,9 @@ clean:
 build: SERVER_PUBLIC_URL ?= http://127.0.0.1:3001
 build: APP_BUILD_PATH ?= $(TEMP_DIR)
 build:
-	rm -rf $(APP_BUILD_PATH)
+	echo "DELETING: $(APP_BUILD_PATH)" | tr ' ' '\n'
+	read -p "OK? [N,y] " input; [[ "$${input}" == "y" ]] \
+	&& rm -rf $(APP_BUILD_PATH)
 
 	cp -r $(MKFILE_DIR)/app/server/src $(APP_BUILD_PATH)
 	cp $(MKFILE_DIR)/app/server/package* $(APP_BUILD_PATH)/
