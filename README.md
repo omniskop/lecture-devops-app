@@ -1,7 +1,9 @@
 Lecture: DevOps - Application
 =============================
 
-> :warning: __Invoking `make` in a path containing white spaces may lead to unforeseen side effects like DATA LOSS !__
+
+> :warning: __Invoking `make` in a path containing white spaces will break execution and may lead to
+> unforeseen side effects like DATA LOSS !__
 
 
 This repository contains the [application](./app/README.md) that is supposed be used as *deployable workload* in the

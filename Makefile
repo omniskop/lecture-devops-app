@@ -3,8 +3,8 @@ SHELL = /usr/bin/env bash -eo pipefail
 
 
 
-MKFILE_DIR = $(abspath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
-LOCAL_DIR := $(abspath $(MKFILE_DIR)/.local)
+MKFILE_DIR = $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+LOCAL_DIR := $(shell echo $$(cd "$(MKFILE_DIR)" && pwd)/.local)
 
 
 DATA_DIR := $(LOCAL_DIR)/data
@@ -32,12 +32,10 @@ $(LOCAL_DIR)/%/:
 
 .PHONY: clean
 clean:
-	echo "DELETING: $(APP_NODE_MODULE_DIRS) $(TEMP_DIR) $(LOCAL_DIR)/dist" | tr ' ' '\n'
-	read -p "OK? [N,y] " input; [[ "$${input}" == "y" ]] \
-	&& rm -rf \
-		$(APP_NODE_MODULE_DIRS) \
-		$(TEMP_DIR) \
-		$(LOCAL_DIR)/dist
+	rm -rf \
+		"$(APP_NODE_MODULE_DIRS)" \
+		"$(TEMP_DIR)" \
+		"$(LOCAL_DIR)/dist"
 
 
 
@@ -45,30 +43,28 @@ clean:
 build: SERVER_PUBLIC_URL ?= http://127.0.0.1:3001
 build: APP_BUILD_PATH ?= $(TEMP_DIR)
 build:
-	echo "DELETING: $(APP_BUILD_PATH)" | tr ' ' '\n'
-	read -p "OK? [N,y] " input; [[ "$${input}" == "y" ]] \
-	&& rm -rf $(APP_BUILD_PATH)
+	rm -rf "$(APP_BUILD_PATH)"
 
-	cp -r $(MKFILE_DIR)/app/server/src $(APP_BUILD_PATH)
-	cp $(MKFILE_DIR)/app/server/package* $(APP_BUILD_PATH)/
-	cd $(APP_BUILD_PATH) \
+	cp -r "$(MKFILE_DIR)/app/server/src" "$(APP_BUILD_PATH)"
+	cp "$(MKFILE_DIR)"/app/server/package* "$(APP_BUILD_PATH)/"
+	cd "$(APP_BUILD_PATH)" \
 	&& \
 		npm install --prod --no-audit --no-fund \
 		&& rm -rf ./package*
-	cd $(MKFILE_DIR)/app/client \
+	cd "$(MKFILE_DIR)/app/client" \
 	&& \
 		PUBLIC_URL=$(SERVER_PUBLIC_URL) \
-		BUILD_PATH=$(APP_BUILD_PATH)/public \
+		BUILD_PATH="$(APP_BUILD_PATH)/public" \
 		node ./scripts/build.js
 
 
 .PHONY: test
 test: randomString = $(shell LC_ALL=C tr -dc 'a-zA-Z0-9' < /dev/urandom | fold -w 32 | head -n 1)
 test:
-	cd $(MKFILE_DIR)/app/client \
+	cd "$(MKFILE_DIR)/app/client" \
 	&& npm run test
 
-	cd $(MKFILE_DIR)/app/server \
+	cd "$(MKFILE_DIR)/app/server" \
 	&& \
 		PORT=3002 \
 		MONGODB_URL=mongodb://localhost:27017/$(randomString) \
@@ -80,23 +76,23 @@ test:
 
 .PHONY: dev-test-client
 dev-test-client:
-	cd $(MKFILE_DIR)/app/client \
+	cd "$(MKFILE_DIR)/app/client" \
 	&& npm run test:dev
 
 
 .PHONY: dev-start-db
 dev-start-db: $(LOG_DIR)/ $(DATA_DIR)/ $(DATA_DIR)/db/
-	mongod --config $(MKFILE_DIR)/app/server/dev.mongod.conf
+	mongod --config "$(MKFILE_DIR)/app/server/dev.mongod.conf"
 
 
 .PHONY: dev-start-app
 dev-start-app:
-	cd $(MKFILE_DIR)/app/client \
+	cd "$(MKFILE_DIR)/app/client" \
 	&& \
 		PUBLIC_URL=$(SERVER_PUBLIC_URL) \
-		BUILD_PATH=$(MKFILE_DIR)/app/server/src/public \
+		BUILD_PATH="$(MKFILE_DIR)/app/server/src/public" \
 		node ./scripts/build.js
-	cd $(MKFILE_DIR)/app/server \
+	cd "$(MKFILE_DIR)/app/server" \
 	&& npm run start:dev
 
 
@@ -109,20 +105,20 @@ run: DB_HOST = localhost
 run: DB_PORT = 27017
 run: $(DATA_DIR)/ $(LOG_DIR)/ $(DATA_DIR)/db/
 	make build \
-		APP_BUILD_PATH=$(BUILD_PATH) \
+		APP_BUILD_PATH="$(BUILD_PATH)" \
 		SERVER_PUBLIC_URL=$(PUBLIC_URL):$(SERVER_PORT)
 
 	(exec mongod \
 		--port $(DB_PORT) \
 		--bind_ip $(DB_HOST) \
 		--logpath /dev/stdout \
-		--dbpath $(DATA_DIR)/db \
+		--dbpath "$(DATA_DIR)/db" \
 	) & PIDS[1]=$$!; \
 	\
 	(PORT=$(SERVER_PORT) \
 	MONGODB_URL=mongodb://$(DB_HOST):$(DB_PORT)/todo-app \
 	JWT_SECRET=myjwtsecret \
-	exec node $(BUILD_PATH)/index.js \
+	exec node "$(BUILD_PATH)/index.js" \
 	) & PIDS[2]=$$!; \
 	\
 	for PID in $${PIDS[*]}; do wait $${PID}; done;
