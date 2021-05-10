@@ -42,7 +42,7 @@ clean:
 .PHONY: build
 build: SERVER_PUBLIC_URL ?= http://127.0.0.1:3001
 build: APP_BUILD_PATH ?= $(TEMP_DIR)
-build:
+build: $(TEMP_DIR)/
 	rm -rf "$(APP_BUILD_PATH)"
 
 	cp -r "$(MKFILE_DIR)/app/server/src" "$(APP_BUILD_PATH)"
