@@ -1,9 +1,13 @@
 Lecture: DevOps - Application
 =============================
 
+> :no_entry: __This repository contains a program that is part of a DevOps course that I am attending at university. It has not been written by me and should not be used for anything else. The original readme follows. __
+
 
 > :warning: __Invoking `make` in a path containing white spaces will break execution and may lead to
 > unforeseen side effects like DATA LOSS !__
+
+
 
 
 This repository contains the [application](./app/README.md) that is supposed be used as *deployable workload* in the
