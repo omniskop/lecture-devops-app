@@ -31,6 +31,9 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 14.x
+      - uses: c-py/action-dotenv-to-setenv@v2
+        with:
+          env-file: ./app/server/test.env
       - run: mongod --config "./test.mongod.conf" &
         working-directory: ./app/server
       - run: npm ci
