@@ -34,6 +34,8 @@ jobs:
       - uses: c-py/action-dotenv-to-setenv@v2
         with:
           env-file: ./app/server/test.env
+      - run: mkdir -p .local/data/db .local/logs
+        working-directory: ./app/server
       - run: mongod --config "./test.mongod.conf" &
         working-directory: ./app/server
       - run: npm ci
