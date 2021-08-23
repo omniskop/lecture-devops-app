@@ -54,6 +54,7 @@ build: $(TEMP_DIR)/
 	cd "$(MKFILE_DIR)/app/client" \
 	&& \
 		PUBLIC_URL=$(SERVER_PUBLIC_URL) \
+		API_URL=http://127.0.0.1:1234 \
 		BUILD_PATH="$(APP_BUILD_PATH)/public" \
 		node ./scripts/build.js
 
@@ -90,6 +91,7 @@ dev-start-app:
 	cd "$(MKFILE_DIR)/app/client" \
 	&& \
 		PUBLIC_URL=$(SERVER_PUBLIC_URL) \
+		API_URL=$(SERVER_PUBLIC_URL) \
 		BUILD_PATH="$(MKFILE_DIR)/app/server/src/public" \
 		node ./scripts/build.js
 	cd "$(MKFILE_DIR)/app/server" \
@@ -100,6 +102,7 @@ dev-start-app:
 .PHONY: run
 run: BUILD_PATH = $(LOCAL_DIR)/dist
 run: PUBLIC_URL = http://localhost
+run: API_URL = http://localhost
 run: SERVER_PORT = 3000
 run: DB_HOST = localhost
 run: DB_PORT = 27017
