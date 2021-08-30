@@ -48,7 +48,7 @@ jobs:
         run: terraform state mv aws_instance.app_server aws_instance.app_server_outdated
         working-directory: ./deployment/terraform
       - name: "start new instances"
-        run: terraform -chdir=terraform apply -auto-approve -var-file="../production.tfvars" -var="public_key=../ssh_key.pub" -var="upgrade_infrastructure=true"
+        run: terraform apply -auto-approve -var-file="../production.tfvars" -var="public_key=../ssh_key.pub" -var="upgrade_infrastructure=true"
         working-directory: ./deployment/terraform
 
       - name: "run ansible"
@@ -56,5 +56,5 @@ jobs:
         working-directory: ./deployment
 
       - name: "stop outdated instances"
-        run: terraform -chdir=terraform apply -auto-approve -var-file="../production.tfvars" -var="public_key=../ssh_key.pub"
+        run: terraform apply -auto-approve -var-file="../production.tfvars" -var="public_key=../ssh_key.pub"
         working-directory: ./deployment/terraform
