@@ -26,10 +26,10 @@ jobs:
         uses: arduino/setup-task@v1
 
       - name: copy public ssh keys
-        run: cat '${{ PUBLIC_SSH_KEY }}' > ssh_key.pub
+        run: cat '${{ env.PUBLIC_SSH_KEY }}' > ssh_key.pub
         working-directory: ./deployment
       - name: copy private ssh keys
-        run: cat '${{ PRIVATE_SSH_KEY }}' > ssh_key
+        run: cat '${{ env.PRIVATE_SSH_KEY }}' > ssh_key
         working-directory: ./deployment
 
       - name: "initialize terraform"
