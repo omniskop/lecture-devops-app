@@ -11,6 +11,15 @@ jobs:
   deploy-staging:
     runs-on: ubuntu-latest
     environment: staging
+    env:
+      CERTIFICATE_ACCESS_TOKEN: "${{ secrets.CERTIFICATE_ACCESS_TOKEN }}"
+      JWT_SECRET: "${{ secrets.JWT_SECRET }}"
+      APP_DEPLOY_KEY: "${{ secrets.APP_DEPLOY_KEY }}"
+      DNS_CONTROL_KEY: "${{ secrets.DNS_CONTROL_KEY }}"
+      TF_HTTP_PASSWORD: "${{ secrets.TERRAFORM_BACKEND_PASSWORD }}"
+      TF_HTTP_ADDRESS: "https://omniskop.de/node-red/devops/terraform/state/staging"
+      TF_HTTP_LOCK_ADDRESS: "https://omniskop.de/node-red/devops/terraform/state/staging/lock"
+      TF_HTTP_UNLOCK_ADDRESS: "https://omniskop.de/node-red/devops/terraform/state/staging/unlock"
 
     steps:
       - name: "checkout deployment repo"
