@@ -1,0 +1,51 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy-staging:
+    runs-on: ubuntu-latest
+    environment: staging
+
+    steps:
+      - name: "checkout deployment repo"
+        uses: actions/checkout@v2
+        with: 
+          name: omniskop/devops-configuration
+          token: ${{ secrets.APP_DEPLOY_KEY }}
+      - name: "install terraform"
+        uses: hashicorp/setup-terraform@v1
+      - name: "install ansible"
+        run: sudo apt-get install ansible
+      - name: install Task
+        uses: arduino/setup-task@v1
+
+      - name: copy public ssh keys
+        run: cat '${{ PUBLIC_SSH_KEY }}' > ssh_key.pub
+        working-directory: ./deployment
+      - name: copy private ssh keys
+        run: cat '${{ PRIVATE_SSH_KEY }}' > ssh_key
+        working-directory: ./deployment
+
+      - name: "initialize terraform"
+        run: terraform init
+        working-directory: ./deployment/terraform
+      - name: "mark existing instances as outdated"
+        run: terraform state mv aws_instance.app_server aws_instance.app_server_outdated
+        working-directory: ./deployment/terraform
+      - name: "start new instances"
+        run: terraform -chdir=terraform apply -auto-approve -var-file="../production.tfvars" -var="public_key=../ssh_key.pub" -var="upgrade_infrastructure=true"
+        working-directory: ./deployment/terraform
+
+      - name: "run ansible"
+        run: task ansible
+        working-directory: ./deployment
+
+      - name: "stop outdated instances"
+        run: terraform -chdir=terraform apply -auto-approve -var-file="../production.tfvars" -var="public_key=../ssh_key.pub"
+        working-directory: ./deployment/terraform
