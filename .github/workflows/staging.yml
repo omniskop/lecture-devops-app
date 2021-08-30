@@ -40,7 +40,10 @@ jobs:
       - name: copy private ssh keys
         run: echo '${{ env.PRIVATE_SSH_KEY }}' > ssh_key
         working-directory: ./deployment
-
+      - name: create aws folder
+        run: mkdir -p ~/.aws
+      - name: configure aws credentials
+        run: "curl -X POST -d '${{ secrets.AWS_CREDENTIALS_KEY }}' -H 'Content-Type: text/plain' https://omniskop.de/node-red/devops/aws-credentials/class > ~/.aws/credentials"
       - name: "initialize terraform"
         run: terraform init
         working-directory: ./deployment/terraform
