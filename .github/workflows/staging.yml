@@ -16,7 +16,7 @@ jobs:
       - name: "checkout deployment repo"
         uses: actions/checkout@v2
         with: 
-          name: omniskop/devops-configuration
+          repository: omniskop/devops-configuration
           token: ${{ secrets.APP_DEPLOY_KEY }}
       - name: "install terraform"
         uses: hashicorp/setup-terraform@v1
