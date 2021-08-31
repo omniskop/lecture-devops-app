@@ -1,23 +1,23 @@
-name: Deploy to Staging
+name: Deploy to Production
 
 on:
   push:
-    branches: [ main ]
+    branches: [ production ]
   workflow_dispatch:
 
 jobs:
-  deploy-staging:
+  deploy-production:
     runs-on: ubuntu-latest
-    environment: staging
+    environment: production
     env:
       CERTIFICATE_ACCESS_TOKEN: "${{ secrets.CERTIFICATE_ACCESS_TOKEN }}"
       JWT_SECRET: "${{ secrets.JWT_SECRET }}"
       APP_DEPLOY_KEY: "${{ secrets.APP_DEPLOY_KEY }}"
       DNS_CONTROL_KEY: "${{ secrets.DNS_CONTROL_KEY }}"
       TF_HTTP_PASSWORD: "${{ secrets.TERRAFORM_BACKEND_PASSWORD }}"
-      TF_HTTP_ADDRESS: "https://omniskop.de/node-red/devops/terraform/state/staging"
-      TF_HTTP_LOCK_ADDRESS: "https://omniskop.de/node-red/devops/terraform/state/staging/lock"
-      TF_HTTP_UNLOCK_ADDRESS: "https://omniskop.de/node-red/devops/terraform/state/staging/unlock"
+      TF_HTTP_ADDRESS: "https://omniskop.de/node-red/devops/terraform/state/production"
+      TF_HTTP_LOCK_ADDRESS: "https://omniskop.de/node-red/devops/terraform/state/production/lock"
+      TF_HTTP_UNLOCK_ADDRESS: "https://omniskop.de/node-red/devops/terraform/state/production/unlock"
 
     steps:
       - name: "checkout deployment repo"
@@ -44,7 +44,7 @@ jobs:
       - name: create aws folder
         run: mkdir -p ~/.aws
       - name: configure aws credentials
-        run: "curl -X POST -d '${{ secrets.AWS_CREDENTIALS_KEY }}' -H 'Content-Type: text/plain' https://omniskop.de/node-red/devops/aws-credentials/class > ~/.aws/credentials"
+        run: "curl -X POST -d '${{ secrets.AWS_CREDENTIALS_KEY }}' -H 'Content-Type: text/plain' https://omniskop.de/node-red/devops/aws-credentials/education > ~/.aws/credentials"
 
       - name: "initialize terraform"
         run: terraform init
@@ -54,7 +54,7 @@ jobs:
         continue-on-error: true
         working-directory: ./deployment/terraform
       - name: "start new instances"
-        run: terraform apply -auto-approve -var-file="../staging.tfvars" -var="public_key=../ssh_key.pub" -var="upgrade_infrastructure=true"
+        run: terraform apply -auto-approve -var-file="../production.tfvars" -var="public_key=../ssh_key.pub" -var="upgrade_infrastructure=true"
         working-directory: ./deployment/terraform
 
       - name: "run ansible"
@@ -62,5 +62,5 @@ jobs:
         working-directory: ./deployment
 
       - name: "stop outdated instances"
-        run: terraform apply -auto-approve -var-file="../staging.tfvars" -var="public_key=../ssh_key.pub"
+        run: terraform apply -auto-approve -var-file="../production.tfvars" -var="public_key=../ssh_key.pub"
         working-directory: ./deployment/terraform
