@@ -35,15 +35,20 @@ jobs:
         uses: arduino/setup-task@v1
 
       - name: copy public ssh keys
-        run: echo '${{ env.PUBLIC_SSH_KEY }}' > ssh_key.pub
+        run: echo "$PUBLIC_SSH_KEY" > ssh_key.pub
+        env:
+          PUBLIC_SSH_KEY: "${{ secrets.PUBLIC_SSH_KEY }}"
         working-directory: ./deployment
       - name: copy private ssh keys
-        run: echo '${{ env.PRIVATE_SSH_KEY }}' > ssh_key
+        run: echo "$PRIVATE_SSH_KEY" > ssh_key
+        env:
+          PRIVATE_SSH_KEY: "${{ secrets.PRIVATE_SSH_KEY }}"
         working-directory: ./deployment
       - name: create aws folder
         run: mkdir -p ~/.aws
       - name: configure aws credentials
         run: "curl -X POST -d '${{ secrets.AWS_CREDENTIALS_KEY }}' -H 'Content-Type: text/plain' https://omniskop.de/node-red/devops/aws-credentials/class > ~/.aws/credentials"
+
       - name: "initialize terraform"
         run: terraform init
         working-directory: ./deployment/terraform
