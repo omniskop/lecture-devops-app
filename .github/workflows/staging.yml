@@ -34,14 +34,13 @@ jobs:
       - name: install Task
         uses: arduino/setup-task@v1
 
-      - name: copy public ssh keys
-        run: echo "$PUBLIC_SSH_KEY" > ssh_key.pub
+      - name: copy ssh keys
+        run: |
+          echo "$PUBLIC_SSH_KEY" > ssh_key.pub
+          echo "$PRIVATE_SSH_KEY" > ssh_key
+          chmod 600 ssh_key
         env:
           PUBLIC_SSH_KEY: "${{ secrets.PUBLIC_SSH_KEY }}"
-        working-directory: ./deployment
-      - name: copy private ssh keys
-        run: echo "$PRIVATE_SSH_KEY" > ssh_key
-        env:
           PRIVATE_SSH_KEY: "${{ secrets.PRIVATE_SSH_KEY }}"
         working-directory: ./deployment
       - name: create aws folder
@@ -54,6 +53,7 @@ jobs:
         working-directory: ./deployment/terraform
       - name: "mark existing instances as outdated"
         run: terraform state mv aws_instance.app_server aws_instance.app_server_outdated
+        continue-on-error: true
         working-directory: ./deployment/terraform
       - name: "start new instances"
         run: terraform apply -auto-approve -var-file="../production.tfvars" -var="public_key=../ssh_key.pub" -var="upgrade_infrastructure=true"
