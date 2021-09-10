@@ -58,6 +58,8 @@ jobs:
       - name: "start new instances"
         run: terraform apply -auto-approve -var-file="../production.tfvars" -var="public_key=../ssh_key.pub" -var="upgrade_infrastructure=true"
         working-directory: ./deployment/terraform
+      - name: "wait"
+        run: sleep 10
 
       - name: "run ansible"
         run: task ansible
