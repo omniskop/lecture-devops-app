@@ -1,0 +1,70 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ production ]
+  workflow_dispatch:
+
+jobs:
+  deploy-production:
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      CERTIFICATE_ACCESS_TOKEN: "${{ secrets.CERTIFICATE_ACCESS_TOKEN }}"
+      JWT_SECRET: "${{ secrets.JWT_SECRET }}"
+      APP_DEPLOY_KEY: "${{ secrets.APP_DEPLOY_KEY }}"
+      DNS_CONTROL_KEY: "${{ secrets.DNS_CONTROL_KEY }}"
+      TF_HTTP_PASSWORD: "${{ secrets.TERRAFORM_BACKEND_PASSWORD }}"
+      TF_HTTP_ADDRESS: "https://omniskop.de/node-red/devops/terraform/state/production"
+      TF_HTTP_LOCK_ADDRESS: "https://omniskop.de/node-red/devops/terraform/state/production/lock"
+      TF_HTTP_UNLOCK_ADDRESS: "https://omniskop.de/node-red/devops/terraform/state/production/unlock"
+      PROMTAIL_LOKI_PASSWORD: "${{ secrets.PROMTAIL_LOKI_PASSWORD }}"
+      PROMETHEUS_PASSWORD: "${{ secrets.PROMETHEUS_PASSWORD }}"
+
+    steps:
+      - name: "checkout deployment repo"
+        uses: actions/checkout@v2
+        with: 
+          repository: omniskop/devops-configuration
+          ssh-key: ${{ secrets.CONFIGURATION_DEPLOY_KEY }}
+      - name: "install terraform"
+        uses: hashicorp/setup-terraform@v1
+      - name: "install ansible"
+        run: sudo apt-get install ansible
+      - name: install Task
+        uses: arduino/setup-task@v1
+
+      - name: copy ssh keys
+        run: |
+          echo "$PUBLIC_SSH_KEY" > ssh_key.pub
+          echo "$PRIVATE_SSH_KEY" > ssh_key
+          chmod 600 ssh_key
+        env:
+          PUBLIC_SSH_KEY: "${{ secrets.PUBLIC_SSH_KEY }}"
+          PRIVATE_SSH_KEY: "${{ secrets.PRIVATE_SSH_KEY }}"
+        working-directory: ./deployment
+      - name: create aws folder
+        run: mkdir -p ~/.aws
+      - name: configure aws credentials
+        run: "curl -X POST -d '${{ secrets.AWS_CREDENTIALS_KEY }}' -H 'Content-Type: text/plain' https://omniskop.de/node-red/devops/aws-credentials/education > ~/.aws/credentials"
+
+      - name: "initialize terraform"
+        run: terraform init
+        working-directory: ./deployment/terraform
+      - name: "mark existing instances as outdated"
+        run: terraform state mv aws_instance.app_server aws_instance.app_server_outdated
+        continue-on-error: true
+        working-directory: ./deployment/terraform
+      - name: "start new instances"
+        run: terraform apply -auto-approve -var-file="../production.tfvars" -var="public_key=../ssh_key.pub" -var="upgrade_infrastructure=true"
+        working-directory: ./deployment/terraform
+      - name: "wait"
+        run: sleep 10
+
+      - name: "run ansible"
+        run: task ansible
+        working-directory: ./deployment
+
+      - name: "stop outdated instances"
+        run: terraform apply -auto-approve -var-file="../production.tfvars" -var="public_key=../ssh_key.pub"
+        working-directory: ./deployment/terraform

@@ -13,8 +13,12 @@ let cookieParser = require('cookie-parser');
 const app = express();
 const port = process.env.PORT || 5000;
 
+let origin = process.env.CLIENT_URL || `http://localhost:${ port }`;
+// remove port 80 and 443 from origin as browsers will omit them
+if(origin.endsWith(":80")) origin = origin.slice(0, -3);
+if(origin.endsWith(":443")) origin = origin.slice(0, -4);
 const corsOptions = {
-    origin: `http://localhost:${ port }`,
+    origin: origin,
     credentials: true
 };
 
