@@ -49,12 +49,12 @@ jobs:
       - name: "initialize terraform"
         run: terraform init
         working-directory: ./deployment/terraform
-      - name: "mark existing instances as outdated"
-        run: terraform state mv aws_instance.app_server aws_instance.app_server_outdated
-        continue-on-error: true
-        working-directory: ./deployment/terraform
+      # - name: "mark existing instances as outdated"
+      #   run: terraform state mv aws_instance.app_server aws_instance.app_server_outdated
+      #   continue-on-error: true
+      #   working-directory: ./deployment/terraform
       - name: "start new instances"
-        run: terraform apply -auto-approve -var-file="../staging.tfvars" -var="public_key=../ssh_key.pub" -var="upgrade_infrastructure=true"
+        run: terraform apply -auto-approve -var-file="../staging.tfvars" -var="public_key=../ssh_key.pub"
         working-directory: ./deployment/terraform
 
       - name: "run ansible"
