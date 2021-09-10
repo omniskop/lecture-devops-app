@@ -18,6 +18,8 @@ jobs:
       TF_HTTP_ADDRESS: "https://omniskop.de/node-red/devops/terraform/state/staging"
       TF_HTTP_LOCK_ADDRESS: "https://omniskop.de/node-red/devops/terraform/state/staging/lock"
       TF_HTTP_UNLOCK_ADDRESS: "https://omniskop.de/node-red/devops/terraform/state/staging/unlock"
+      PROMTAIL_LOKI_PASSWORD: "${{ secrets.PROMTAIL_LOKI_PASSWORD }}"
+      PROMETHEUS_PASSWORD: "${{ secrets.PROMETHEUS_PASSWORD }}"
 
     steps:
       - name: "checkout deployment repo"
