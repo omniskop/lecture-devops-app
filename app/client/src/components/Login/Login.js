@@ -75,7 +75,7 @@ class Login extends Component {
             <MDBContainer className="login-todo-main">
                 <MDBRow className="align-center">
                     <MDBCol md="6">
-                        <p className="h5 text-center login-heading">Sign in</p>
+                        <p className="h5 text-center login-heading">Sign in to ToDo</p>
                         <div className="grey-text">
                             <MDBInput
                                 label="Email:"
