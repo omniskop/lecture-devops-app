@@ -1,4 +1,4 @@
-> :no_entry: __This repository contains a program that is part of a DevOps course that I am attending at university. It has not been written by me and should not be used for anything else. The original readme follows.__
+> :no_entry: __This repository contains a program that is part of a DevOps course that I am attending at university. Check [Here](https://github.com/omniskop/devops-configuration) deployment code and documentation. It has not been written by me and should not be used for anything else. The original readme follows.__
 
 Lecture: DevOps - Application
 =============================
